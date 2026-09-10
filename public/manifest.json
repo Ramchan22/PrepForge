@@ -1,0 +1,16 @@
+{
+  "name": "PrepForge — Personalized Software Engineer Interview Preparation Platform",
+  "short_name": "PrepForge",
+  "description": "Enterprise-grade interview preparation operating system for senior engineers",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070a13",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
