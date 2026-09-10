@@ -43,18 +43,26 @@ async function main() {
 
   console.log(`[PrepForge Seed] Created users: ${ramkumar.email} and ${admin.email}`);
 
-  // 2. Default SMTP Config
+  // 2. Default SMTP Config (Brevo Relay)
   await prisma.smtpConfig.upsert({
     where: { id: 'default' },
-    update: {},
+    update: {
+      host: 'smtp-relay.brevo.com',
+      port: 465,
+      username: 'hari@fintuple.com',
+      passwordEncrypted: 'enc:vJlWd6JHDrZZaCDT:vW6OWI+1fIDpk4Gqln3f0w==:edVtZawDLRlVSWtck4fNjw==',
+      secure: true,
+      senderEmail: 'hari@fintuple.com',
+      senderName: 'PrepForge Interview Coach',
+    },
     create: {
       id: 'default',
-      host: 'smtp.gmail.com',
-      port: 587,
-      username: 'notifications@prepforge.dev',
-      passwordEncrypted: 'demo_password',
-      secure: false,
-      senderEmail: 'coach@prepforge.dev',
+      host: 'smtp-relay.brevo.com',
+      port: 465,
+      username: 'hari@fintuple.com',
+      passwordEncrypted: 'enc:vJlWd6JHDrZZaCDT:vW6OWI+1fIDpk4Gqln3f0w==:edVtZawDLRlVSWtck4fNjw==',
+      secure: true,
+      senderEmail: 'hari@fintuple.com',
       senderName: 'PrepForge Interview Coach',
     },
   });

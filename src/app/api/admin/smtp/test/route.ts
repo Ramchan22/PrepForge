@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { prisma } from '@/server/lib/prisma';
 import { sendEmail, renderDailyPrepEmail } from '@/server/lib/email';
+import { decryptCredential } from '@/server/lib/crypto';
 
 export async function POST(req: Request) {
   try {
@@ -13,10 +14,11 @@ export async function POST(req: Request) {
       const testHost = host || config?.host || 'smtp.gmail.com';
       const testPort = parseInt(String(port || config?.port || 587), 10);
       const testUser = username !== undefined ? username : (config?.username || '');
-      let testPass = password;
-      if (!testPass || testPass === '••••••••••••') {
-        testPass = config?.passwordEncrypted || '';
+      let rawPass = password;
+      if (!rawPass || rawPass === '••••••••••••') {
+        rawPass = config?.passwordEncrypted || '';
       }
+      const testPass = decryptCredential(rawPass);
       const testSecure = secure !== undefined ? Boolean(secure) : Boolean(config?.secure);
 
       // If credentials provided, test real connection with nodemailer

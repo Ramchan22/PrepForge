@@ -22,14 +22,14 @@ import { ALL_SESSIONS } from '@/data/curriculum/sessionsData';
 export function AdminConsole() {
   const [activeTab, setActiveTab] = useState<'SMTP' | 'LOCKS' | 'CRITERIA' | 'AUDIT'>('SMTP');
 
-  // SMTP form state
-  const [smtpHost, setSmtpHost] = useState('smtp.gmail.com');
-  const [smtpPort, setSmtpPort] = useState('587');
-  const [smtpUser, setSmtpUser] = useState('notifications@prepforge.dev');
-  const [smtpPassword, setSmtpPassword] = useState('');
+  // SMTP form state (Brevo Production Relay defaults)
+  const [smtpHost, setSmtpHost] = useState('smtp-relay.brevo.com');
+  const [smtpPort, setSmtpPort] = useState('465');
+  const [smtpUser, setSmtpUser] = useState('hari@fintuple.com');
+  const [smtpPassword, setSmtpPassword] = useState('••••••••••••');
   const [smtpSenderName, setSmtpSenderName] = useState('PrepForge Interview Coach');
-  const [smtpSenderEmail, setSmtpSenderEmail] = useState('coach@prepforge.dev');
-  const [smtpSecure, setSmtpSecure] = useState(false);
+  const [smtpSenderEmail, setSmtpSenderEmail] = useState('hari@fintuple.com');
+  const [smtpSecure, setSmtpSecure] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
 

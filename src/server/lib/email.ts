@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { prisma } from './prisma';
+import { decryptCredential } from './crypto';
 
 export interface EmailOptions {
   to: string;
@@ -23,7 +24,8 @@ export async function getTransporter() {
   const port = smtpConfig?.port || parseInt(process.env.SMTP_PORT || '587', 10);
   const secure = smtpConfig?.secure ?? (process.env.SMTP_SECURE === 'true');
   const user = smtpConfig?.username || process.env.SMTP_USER || '';
-  const pass = smtpConfig?.passwordEncrypted || process.env.SMTP_PASSWORD || '';
+  const rawPass = smtpConfig?.passwordEncrypted || process.env.SMTP_PASSWORD || '';
+  const pass = decryptCredential(rawPass);
 
   const hasRealCredentials = Boolean(
     user &&

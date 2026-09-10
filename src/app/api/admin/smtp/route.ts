@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/server/lib/prisma';
+import { encryptCredential } from '@/server/lib/crypto';
 
 // GET: Fetch saved SMTP configuration
 export async function GET() {
@@ -74,7 +75,7 @@ export async function POST(req: Request) {
 
     let finalPassword = existing?.passwordEncrypted || '';
     if (password && password !== '••••••••••••') {
-      finalPassword = password;
+      finalPassword = encryptCredential(password);
     }
 
     const updated = await prisma.smtpConfig.upsert({
