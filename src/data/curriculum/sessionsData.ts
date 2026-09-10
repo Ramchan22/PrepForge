@@ -1,0 +1,339 @@
+export interface SessionDefinition {
+  order: number;
+  title: string;
+  slug: string;
+  description: string;
+  icon: string;
+  estimatedHours: number;
+  isLockedByDefault: boolean;
+  topics: {
+    order: number;
+    title: string;
+    slug: string;
+    description: string;
+    difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+  }[];
+}
+
+export const ALL_SESSIONS: SessionDefinition[] = [
+  {
+    order: 1,
+    title: "Core Java & JVM Internals",
+    slug: "core-java",
+    description: "Deep dive into JVM memory layout, execution flow, JIT compilation, ClassLoaders, GC roots, and runtime data areas.",
+    icon: "Cpu",
+    estimatedHours: 4.5,
+    isLockedByDefault: false, // Session 1 starts unlocked
+    topics: [
+      { order: 1, title: "JVM Architecture & Memory Model", slug: "jvm-architecture-memory-model", description: "Stack vs Heap, Metaspace, JIT compiler, execution engine, and native method interface.", difficulty: "ADVANCED" },
+      { order: 2, title: "Class Loading Subsystem & ClassLoaders", slug: "class-loading-subsystem", description: "Bootstrap, Extension, Application ClassLoaders, delegation hierarchy, and custom ClassLoaders.", difficulty: "ADVANCED" },
+      { order: 3, title: "Garbage Collection Mechanics & Roots", slug: "garbage-collection-mechanics", description: "Generational GC, GC roots, Stop-The-World pauses, G1GC vs ZGC vs ParallelGC.", difficulty: "EXPERT" },
+      { order: 4, title: "Primitive Types, Memory Footprint & Pass-by-Value", slug: "primitive-types-memory-footprint", description: "Memory layout of primitives vs object headers, escape analysis, and strict pass-by-value.", difficulty: "INTERMEDIATE" },
+    ]
+  },
+  {
+    order: 2,
+    title: "Object-Oriented Programming & SOLID",
+    slug: "oop-solid",
+    description: "Production OOP paradigms, polymorphism mechanics, virtual method tables (vtable), and SOLID in enterprise backend services.",
+    icon: "Layers",
+    estimatedHours: 4.0,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Polymorphism & Virtual Method Dispatch (vtable)", slug: "polymorphism-virtual-dispatch", description: "Static vs dynamic binding, bytecode INVOKEVIRTUAL vs INVOKESTATIC, and inline caching.", difficulty: "ADVANCED" },
+      { order: 2, title: "SOLID Principles in High-Scale Backend Systems", slug: "solid-principles-enterprise", description: "Liskov Substitution in payment gateways, Interface Segregation vs bloated adapters, DIP with IoC.", difficulty: "ADVANCED" },
+      { order: 3, title: "Composition vs Inheritance & Association Models", slug: "composition-vs-inheritance", description: "Fragile base class problem, wrapper patterns, aggregation, and component reuse in fintech.", difficulty: "INTERMEDIATE" },
+    ]
+  },
+  {
+    order: 3,
+    title: "Java String & Object Contract",
+    slug: "string-object-concepts",
+    description: "String pool memory deduplication, immutability thread-safety, equals/hashCode contract, and deep vs shallow cloning.",
+    icon: "FileCode",
+    estimatedHours: 3.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "String Pool, Immutability & Compact Strings", slug: "string-pool-immutability", description: "Internal char[] vs byte[] (Compact Strings), String deduplication in G1, StringBuilder vs StringBuffer.", difficulty: "ADVANCED" },
+      { order: 2, title: "equals() and hashCode() Enterprise Contract", slug: "equals-hashcode-contract", description: "Contract violations, hash bucket distribution, mutable keys catastrophe in HashMaps.", difficulty: "ADVANCED" },
+      { order: 3, title: "Object Cloning, Deep Copy & Serialization Traps", slug: "object-cloning-deep-copy", description: "Cloneable shortcomings, copy constructors, defensive copying, and record classes.", difficulty: "INTERMEDIATE" },
+    ]
+  },
+  {
+    order: 4,
+    title: "Collections Framework Internals",
+    slug: "collections-framework",
+    description: "HashMap bucket collision resolution, treeification (Red-Black trees), ConcurrentHashMap CAS + synchronized stripe locking.",
+    icon: "Database",
+    estimatedHours: 5.0,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "HashMap Internal Implementation & Treeification", slug: "hashmap-internal-implementation", description: "Bitwise hash spread, capacity power of 2, load factor 0.75, table doubling, and linked list to TreeNode.", difficulty: "EXPERT" },
+      { order: 2, title: "ConcurrentHashMap: CAS, Synchronized & Stripe Locking", slug: "concurrenthashmap-internals", description: "Java 7 segment locking vs Java 8+ CAS + synchronized per bin, volatile Node val, resize Transfer.", difficulty: "EXPERT" },
+      { order: 3, title: "ArrayList vs LinkedList & CopyOnWriteArrayList", slug: "list-implementations-performance", description: "CPU cache locality, amortized O(1) growth, CopyOnWriteArrayList snapshot iteration.", difficulty: "INTERMEDIATE" },
+      { order: 4, title: "PriorityQueue & Custom Comparators", slug: "priority-queue-comparators", description: "Binary heap array representation, siftUp/siftDown, and total ordering requirements.", difficulty: "INTERMEDIATE" },
+    ]
+  },
+  {
+    order: 5,
+    title: "Java 8+ Modern Features & Streams",
+    slug: "java-8-modern-features",
+    description: "Functional programming in Java, Stream pipeline internals, Spliterators, CompletableFuture asynchronous orchestration.",
+    icon: "Zap",
+    estimatedHours: 4.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Stream Pipeline Internals & Lazy Evaluation", slug: "stream-pipeline-internals", description: "Sink chaining, stateless vs stateful intermediate operations, short-circuiting, Spliterator.", difficulty: "ADVANCED" },
+      { order: 2, title: "Collectors, groupingBy & Custom Reductions", slug: "collectors-groupingby-reduction", description: "Two-level grouping, partitioningBy, downstream collectors, and parallel stream pitfalls.", difficulty: "ADVANCED" },
+      { order: 3, title: "CompletableFuture & Asynchronous Pipelines", slug: "completablefuture-async-pipelines", description: "ForkJoinPool.commonPool(), supplyAsync, thenCompose vs thenCombine, exception handling.", difficulty: "EXPERT" },
+    ]
+  },
+  {
+    order: 6,
+    title: "Enterprise Exception Handling",
+    slug: "exception-handling",
+    description: "Checked vs unchecked exception philosophy, stack trace generation performance costs, global Spring @ControllerAdvice architectures.",
+    icon: "AlertTriangle",
+    estimatedHours: 3.0,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "JVM Exception Hierarchy & Stack Unwinding", slug: "exception-hierarchy-stack-unwinding", description: "Throwable, fillInStackTrace() performance overhead, suppressed exceptions, try-with-resources.", difficulty: "ADVANCED" },
+      { order: 2, title: "Global REST Exception Handling Architecture", slug: "global-rest-exception-handling", description: "@RestControllerAdvice, Problem Details RFC 7807, domain exceptions to HTTP mapping.", difficulty: "ADVANCED" },
+    ]
+  },
+  {
+    order: 7,
+    title: "Multithreading & Concurrency",
+    slug: "multithreading-concurrency",
+    description: "Java Memory Model (JMM), volatile memory barriers, synchronized monitor lock, ReentrantLock, deadlock prevention, Virtual Threads.",
+    icon: "Shuffle",
+    estimatedHours: 6.0,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Java Memory Model (JMM) & Happens-Before Order", slug: "jmm-happens-before", description: "Instruction reordering, CPU L1/L2 caches, volatile load/store memory barriers, visibility.", difficulty: "EXPERT" },
+      { order: 2, title: "ThreadPoolExecutor Architecture & Rejection Policies", slug: "threadpoolexecutor-architecture", description: "corePoolSize, maximumPoolSize, workQueue saturation, CallerRunsPolicy, graceful shutdown.", difficulty: "ADVANCED" },
+      { order: 3, title: "Locks, ReentrantLock, Condition & Deadlock Avoidance", slug: "locks-reentrantlock-deadlocks", description: "AQS (AbstractQueuedSynchronizer) state, fair vs non-fair locks, lock ordering.", difficulty: "EXPERT" },
+      { order: 4, title: "Virtual Threads (Project Loom) in Java 21", slug: "virtual-threads-loom", description: "Carrier threads, continuation, unmounting on I/O, synchronized pinning pitfalls.", difficulty: "EXPERT" },
+    ]
+  },
+  {
+    order: 8,
+    title: "JVM Performance Tuning & Diagnostics",
+    slug: "jvm-performance-diagnostics",
+    description: "Thread dump analysis, memory leak detection via heap dumps, GC logging flags, CPU profiling, production troubleshooting.",
+    icon: "Activity",
+    estimatedHours: 4.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Heap Dump Analysis & Memory Leak Triage", slug: "heap-dump-analysis-memory-leaks", description: "Eclipse MAT, shallow vs retained heap, GC roots, unclosed connections, ThreadLocal leaks.", difficulty: "EXPERT" },
+      { order: 2, title: "Thread Dump Diagnostics (Blocked, Waiting, Deadlock)", slug: "thread-dump-diagnostics", description: "jcmd, jstack, thread states, lock contention identification, synchronized vs Lock in dumps.", difficulty: "ADVANCED" },
+      { order: 3, title: "GC Tuning: G1GC vs ZGC Low-Latency Tuning", slug: "gc-tuning-g1gc-zgc", description: "MaxGCPauseMillis, InitiatingHeapOccupancyPercent, Humongous allocations, ZGC colored pointers.", difficulty: "EXPERT" },
+    ]
+  },
+  {
+    order: 9,
+    title: "SQL & Relational Database Architecture",
+    slug: "sql-database-architecture",
+    description: "B-Tree vs Hash indexes, composite index leftmost prefix rule, transaction isolation levels, MVCC, deadlocks, window functions.",
+    icon: "Server",
+    estimatedHours: 5.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "B-Tree Index Internals & EXPLAIN ANALYZE Optimization", slug: "btree-index-internals-explain", description: "Root, branch, leaf nodes, index scans vs sequential scans, composite index order, index selectivity.", difficulty: "EXPERT" },
+      { order: 2, title: "Transaction Isolation Levels & MVCC Mechanics", slug: "transaction-isolation-mvcc", description: "Read Committed, Repeatable Read, Serializable, dirty reads, non-repeatable reads, phantom reads.", difficulty: "EXPERT" },
+      { order: 3, title: "Window Functions & Advanced SQL Queries", slug: "window-functions-advanced-sql", description: "ROW_NUMBER(), RANK(), DENSE_RANK(), LEAD/LAG, PARTITION BY, running balances.", difficulty: "ADVANCED" },
+      { order: 4, title: "Deadlock Detection & Concurrency Mitigation", slug: "database-deadlock-mitigation", description: "Row-level locks (FOR UPDATE), lock escalation, deterministic lock ordering, lock timeouts.", difficulty: "ADVANCED" },
+    ]
+  },
+  {
+    order: 10,
+    title: "JPA & Hibernate Persistence Internals",
+    slug: "jpa-hibernate",
+    description: "Persistence Context first-level cache, dirty checking, N+1 query problem, fetch strategies, optimistic vs pessimistic locking.",
+    icon: "FolderGit2",
+    estimatedHours: 4.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Persistence Context, First-Level Cache & Dirty Checking", slug: "persistence-context-dirty-checking", description: "Entity lifecycle states (Transient, Managed, Detached, Removed), snapshot comparison, flush modes.", difficulty: "ADVANCED" },
+      { order: 2, title: "N+1 Query Problem & Fetching Strategies", slug: "n-plus-1-problem-fetching", description: "LAZY vs EAGER traps, JOIN FETCH in JPQL, @EntityGraph, batch fetch size.", difficulty: "EXPERT" },
+      { order: 3, title: "Optimistic vs Pessimistic Locking in Financial Systems", slug: "jpa-locking-optimistic-pessimistic", description: "@Version column, OptimisticLockException, PESSIMISTIC_WRITE, SKIP LOCKED for queue processing.", difficulty: "ADVANCED" },
+    ]
+  },
+  {
+    order: 11,
+    title: "Spring Framework Core & AOP",
+    slug: "spring-framework",
+    description: "IoC container, ApplicationContext, bean lifecycle callbacks, proxy mechanisms (JDK Dynamic vs CGLIB), AOP transaction handling.",
+    icon: "Feather",
+    estimatedHours: 4.0,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "IoC Container & Bean Lifecycle Phases", slug: "ioc-bean-lifecycle-phases", description: "BeanFactory vs ApplicationContext, BeanPostProcessor, @PostConstruct, InitializingBean.", difficulty: "ADVANCED" },
+      { order: 2, title: "Spring AOP & Proxy Mechanisms (JDK vs CGLIB)", slug: "spring-aop-proxies", description: "Pointcuts, Advices, proxy self-invocation bypass problem with @Transactional, class vs interface proxying.", difficulty: "EXPERT" },
+    ]
+  },
+  {
+    order: 12,
+    title: "Spring Boot Architecture & Enterprise Design",
+    slug: "spring-boot",
+    description: "Auto-configuration mechanics, @Conditional annotations, custom starter architecture, Spring Boot Actuator metrics, production readiness.",
+    icon: "Compass",
+    estimatedHours: 4.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Auto-Configuration Mechanics & @Conditional Evaluation", slug: "autoconfiguration-conditional-evaluation", description: "spring.factories vs org.springframework.boot.autoconfigure.AutoConfiguration.imports.", difficulty: "ADVANCED" },
+      { order: 2, title: "Production Monitoring with Spring Boot Actuator & Micrometer", slug: "actuator-micrometer-metrics", description: "Health indicators, Prometheus endpoint, custom business metrics, thread dump endpoints.", difficulty: "ADVANCED" },
+    ]
+  },
+  {
+    order: 13,
+    title: "Spring Security, JWT & Authentication Architecture",
+    slug: "spring-security",
+    description: "SecurityFilterChain architecture, JWT authentication, rotating refresh tokens with reuse detection, Argon2id hashing, RBAC, multi-tenant security.",
+    icon: "Shield",
+    estimatedHours: 5.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "SecurityFilterChain & DelegatingFilterProxy", slug: "security-filter-chain-delegating-proxy", description: "Filter order, OncePerRequestFilter, SecurityContextHolder, ThreadLocal cleanup.", difficulty: "ADVANCED" },
+      { order: 2, title: "JWT Access Token & Rotating Refresh Token Architecture", slug: "jwt-rotating-refresh-token-reuse", description: "Short-lived access tokens (15m), refresh token rotation, replay attack reuse detection family revocation.", difficulty: "EXPERT" },
+      { order: 3, title: "Password Hashing with Argon2id & Account Lockout", slug: "argon2id-password-hashing-lockout", description: "Memory hardness, time cost, parallelism, brute-force mitigation, exponential backoff lockout.", difficulty: "ADVANCED" },
+    ]
+  },
+  {
+    order: 14,
+    title: "REST API Design & Enterprise Best Practices",
+    slug: "rest-api-design",
+    description: "HTTP semantics, idempotency keys via Redis, cursor pagination vs offset, RFC 7807 Problem Details, API versioning, rate limiting.",
+    icon: "Globe",
+    estimatedHours: 4.0,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Idempotency Implementation in Financial APIs", slug: "idempotency-financial-apis", description: "Idempotency-Key header, Redis distributed locking + result caching, duplicate payment prevention.", difficulty: "EXPERT" },
+      { order: 2, title: "Pagination Strategies: Keyset/Cursor vs Offset", slug: "pagination-cursor-vs-offset", description: "Offset degradation on deep pagination, seek method (WHERE id > lastId), stable sorting.", difficulty: "ADVANCED" },
+    ]
+  },
+  {
+    order: 15,
+    title: "Node.js & NestJS Architecture",
+    slug: "nodejs-nestjs",
+    description: "Node.js Libuv event loop phases, NestJS execution lifecycle (Guards -> Interceptors -> Pipes -> Filters), Prisma ORM, CLS multi-tenancy.",
+    icon: "Terminal",
+    estimatedHours: 5.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Node.js Event Loop & Non-Blocking I/O Internals", slug: "event-loop-internals", description: "Timers, pending callbacks, poll phase, check (setImmediate), process.nextTick vs microtasks.", difficulty: "EXPERT" },
+      { order: 2, title: "NestJS Request Lifecycle & Architecture", slug: "nestjs-request-lifecycle", description: "Middleware -> Guards -> Interceptors (pre) -> Pipes -> Controller -> Interceptors (post) -> Filters.", difficulty: "ADVANCED" },
+      { order: 3, title: "CLS (AsyncLocalStorage) for Multi-Tenant Context", slug: "cls-asynclocalstorage-multitenancy", description: "Subdomain/header resolution, AsyncLocalStorage context propagation across async boundaries without parameter drilling.", difficulty: "EXPERT" },
+    ]
+  },
+  {
+    order: 16,
+    title: "Microservices Architecture & Patterns",
+    slug: "microservices",
+    description: "Service boundaries, Saga pattern (Orchestration vs Choreography), Transactional Outbox pattern, BullMQ, NATS messaging, Circuit Breaker.",
+    icon: "GitBranch",
+    estimatedHours: 6.0,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Distributed Transactions: Saga Pattern (Orchestration vs Choreography)", slug: "saga-distributed-transactions", description: "Compensating transactions, pivot step, state machine orchestrator vs event-driven choreography.", difficulty: "EXPERT" },
+      { order: 2, title: "Transactional Outbox Pattern with Message Relays", slug: "transactional-outbox-pattern", description: "Dual-write problem, atomic DB transaction with outbox table, CDC (Change Data Capture) or polling relay.", difficulty: "EXPERT" },
+      { order: 3, title: "Asynchronous Messaging with BullMQ & NATS", slug: "bullmq-nats-messaging", description: "Redis-backed job queues, delay/retry/backoff, NATS pub/sub subject routing, at-least-once delivery.", difficulty: "ADVANCED" },
+      { order: 4, title: "Resilience: Circuit Breaker & Fallback Patterns", slug: "circuit-breaker-pattern", description: "Closed, Open, Half-Open states, failure rate threshold, sliding window, fallback degradation.", difficulty: "ADVANCED" },
+    ]
+  },
+  {
+    order: 17,
+    title: "Redis & Distributed Caching",
+    slug: "redis-caching",
+    description: "Redis data structures, Cache-Aside vs Write-Through, cache stampede mitigation, Redlock distributed locking, TTL eviction strategies.",
+    icon: "HardDrive",
+    estimatedHours: 4.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Caching Patterns & Cache Invalidation", slug: "caching-patterns-invalidation", description: "Cache-Aside, Write-Through, Write-Behind, Cache Stampede (thundering herd), probabilistic early expiration.", difficulty: "ADVANCED" },
+      { order: 2, title: "Distributed Locking with Redis (Redlock)", slug: "redis-distributed-locking-redlock", description: "SET NX PX, lock release safety with Lua script verification, lease renewal (watchdog), Redlock algorithm.", difficulty: "EXPERT" },
+    ]
+  },
+  {
+    order: 18,
+    title: "System Design for Senior Engineers (10 Real Scenarios)",
+    slug: "system-design",
+    description: "End-to-end architecture blueprints: requirements, capacity estimation, high-level diagrams, data models, scaling, and failure modes.",
+    icon: "LayoutGrid",
+    estimatedHours: 8.0,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Design an Investor Onboarding Platform (AIF/PMS)", slug: "design-investor-onboarding-platform", description: "6-stage onboarding lifecycle, KYC, document vault, state machine, approval matrix.", difficulty: "EXPERT" },
+      { order: 2, title: "Design a High-Throughput Digital eSign & Verification Platform", slug: "design-esign-platform", description: "PDF stamping, Aadhaar/NSDL integration, webhook verification, immutable audit trail.", difficulty: "EXPERT" },
+      { order: 3, title: "Design a Multi-Tenant SaaS Platform with Strict Data Isolation", slug: "design-multitenant-saas", description: "Database-per-tenant vs Schema vs Shared schema with Row-Level Security, tenant routing.", difficulty: "EXPERT" },
+      { order: 4, title: "Design a Distributed Rate Limiting & Abuse Prevention Service", slug: "design-rate-limiting-service", description: "Token bucket, Leaky bucket, Sliding window counter in Redis, multi-tier limits.", difficulty: "EXPERT" },
+    ]
+  },
+  {
+    order: 19,
+    title: "AWS Cloud Infrastructure & Production Security",
+    slug: "aws-cloud",
+    description: "S3 secure document storage with pre-signed URLs, IAM least-privilege policies, RDS multi-AZ failover, VPC security groups, CloudWatch.",
+    icon: "Cloud",
+    estimatedHours: 4.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Secure S3 Document Storage & Pre-Signed URLs", slug: "s3-presigned-urls-document-vault", description: "Direct-to-S3 uploads, private bucket policies, time-limited signed URLs, server-side encryption (KMS).", difficulty: "ADVANCED" },
+      { order: 2, title: "VPC Networking, Security Groups & RDS Multi-AZ", slug: "vpc-security-groups-rds-failover", description: "Public vs private subnets, NAT gateways, least-privilege security groups, read replicas, automatic failover.", difficulty: "ADVANCED" },
+    ]
+  },
+  {
+    order: 20,
+    title: "Docker, CI/CD Pipelines & Linux Diagnostics",
+    slug: "docker-cicd-linux",
+    description: "Multi-stage Docker builds, non-root security containers, GitLab CI/CD & Azure DevOps pipelines, Blue-Green deployments, Linux troubleshooting.",
+    icon: "Box",
+    estimatedHours: 4.0,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Multi-Stage Dockerfile Optimization & Security", slug: "docker-multistage-security", description: "Minimal Alpine/Distroless bases, layer caching, non-root user execution, scanning vulnerabilities.", difficulty: "ADVANCED" },
+      { order: 2, title: "Production Linux Diagnostics & Process Monitoring", slug: "linux-diagnostics-troubleshooting", description: "top, htop, netstat, lsof, strace, curl networking diagnostics, disk I/O analysis.", difficulty: "ADVANCED" },
+    ]
+  },
+  {
+    order: 21,
+    title: "Enterprise Design Patterns & Real-World Use Cases",
+    slug: "design-patterns",
+    description: "Adapter, Decorator, State Machine, Circuit Breaker, Strategy, and Factory patterns with direct fintech code implementations.",
+    icon: "Grid",
+    estimatedHours: 5.0,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "Adapter Pattern in Multi-Vendor Gateway Integrations", slug: "adapter-pattern-gateways", description: "Normalizing Leegality, NSDL, DigiLocker, and KwikID interfaces into unified domain contracts.", difficulty: "ADVANCED" },
+      { order: 2, title: "State Machine Pattern in Multi-Stage Onboarding", slug: "state-machine-onboarding", description: "Enforcing valid lifecycle transitions (Draft -> Review -> eSign -> Completed), preventing illegal skips.", difficulty: "EXPERT" },
+      { order: 3, title: "Decorator Pattern in Transparent Audit Logging", slug: "decorator-pattern-audit-logging", description: "Wrapping repository and service calls with automatic domain and HTTP traffic audit trails.", difficulty: "ADVANCED" },
+    ]
+  },
+  {
+    order: 22,
+    title: "Enterprise Application Security & OWASP Defense",
+    slug: "enterprise-security",
+    description: "HMAC-SHA256 webhook verification, SQL injection defense, CORS/CSRF configurations, XSS mitigation, secure credential vaulting.",
+    icon: "Lock",
+    estimatedHours: 4.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "HMAC-SHA256 Webhook Verification & Timing Attacks", slug: "hmac-webhook-verification-timing", description: "Cryptographic signature validation, timing-safe string comparison, replay prevention via timestamp window.", difficulty: "EXPERT" },
+      { order: 2, title: "OWASP Top 10 Mitigation in Modern Full-Stack Systems", slug: "owasp-top-10-mitigation", description: "SQL Injection via parameterized queries, XSS sanitization, CSRF token validation with SameSite cookies.", difficulty: "ADVANCED" },
+    ]
+  },
+  {
+    order: 23,
+    title: "Project Deep Dive: Production Systems Mastery",
+    slug: "project-deep-dive",
+    description: "Deep technical breakdown of candidate's real enterprise platforms: WealthServ 2.0, Barjeel MF, Foreign Custody, Reusable eSign, UPEX.",
+    icon: "Briefcase",
+    estimatedHours: 6.5,
+    isLockedByDefault: true,
+    topics: [
+      { order: 1, title: "WealthServ 2.0: 6-Stage Lifecycle & CLS Multi-Tenancy", slug: "wealthserv-architecture-deep-dive", description: "AIF/PMS investor onboarding, NestJS + Prisma, state machine, token rotation, Leegality eSign, HMAC webhooks.", difficulty: "EXPERT" },
+      { order: 2, title: "Barjeel & Foreign Custody: DigiLocker, CKYC & NSDL eSign", slug: "barjeel-foreign-custody-deep-dive", description: "Government registry integrations, S3 signed URLs, PAN/AML/LEI validation, ICICI API integration.", difficulty: "EXPERT" },
+      { order: 3, title: "Reusable eSign Platform & UPEX Microservices", slug: "reusable-esign-upex-deep-dive", description: "J2EE, Spring Boot, Hibernate, MSSQL, OAuth2, high-throughput microservices, Docker CI/CD.", difficulty: "EXPERT" },
+    ]
+  }
+];

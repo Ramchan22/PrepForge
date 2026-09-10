@@ -1,0 +1,270 @@
+// Prisma Schema for PostgreSQL (Railway Production)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                      String                 @id @default(cuid())
+  email                   String                 @unique
+  passwordHash            String
+  name                    String
+  role                    String                 @default("USER") // USER, ADMIN
+  streak                  Int                    @default(1)
+  currentSessionId        String?
+  interviewReadinessScore Float                  @default(78.5)
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+
+  conceptProgress         UserConceptProgress[]
+  sessionProgress         UserSessionProgress[]
+  testAttempts            TestAttempt[]
+  codingSubmissions       CodingSubmission[]
+  interviewSessions       InterviewSession[]
+  auditLogs               AuditLog[]
+}
+
+model Session {
+  id                 String                @id @default(cuid())
+  order              Int                   @unique
+  title              String
+  slug               String                @unique
+  description        String
+  icon               String                @default("Code")
+  estimatedHours     Float                 @default(4.0)
+  isLockedByDefault  Boolean               @default(true)
+  createdAt          DateTime              @default(now())
+
+  topics             Topic[]
+  userProgress       UserSessionProgress[]
+}
+
+model Topic {
+  id             String          @id @default(cuid())
+  sessionId      String
+  order          Int
+  title          String
+  slug           String
+  description    String
+  difficulty     String          @default("INTERMEDIATE") // BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
+  createdAt      DateTime        @default(now())
+
+  session        Session         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  concepts       Concept[]
+  questions      Question[]
+  codingProblems CodingProblem[]
+
+  @@unique([sessionId, slug])
+}
+
+model Concept {
+  id                     String                @id @default(cuid())
+  topicId                String
+  order                  Int
+  title                  String
+  slug                   String
+  summary                String
+  whyExists              String
+  howItWorks             String
+  internalFlowMermaid    String
+  fintechExample         String
+  codeSnippet            String
+  codeLanguage           String                @default("java")
+  codeWalkthrough        String
+  commonMistakesJson     String                @default("[]")
+  interviewQuestionsJson String                @default("[]")
+  followUpQuestionsJson  String                @default("[]")
+  quickRevisionJson      String                @default("[]")
+  relatedTopicsJson      String                @default("[]")
+  createdAt              DateTime              @default(now())
+
+  topic                  Topic                 @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  userProgress           UserConceptProgress[]
+
+  @@unique([topicId, slug])
+}
+
+model UserConceptProgress {
+  id           String    @id @default(cuid())
+  userId       String
+  conceptId    String
+  isCompleted  Boolean   @default(false)
+  completedAt  DateTime?
+  notes        String?
+  isBookmarked Boolean   @default(false)
+  updatedAt    DateTime  @updatedAt
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concept      Concept   @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conceptId])
+}
+
+model UserSessionProgress {
+  id                String    @id @default(cuid())
+  userId            String
+  sessionId         String
+  status            String    @default("LOCKED") // LOCKED, AVAILABLE, IN_PROGRESS, COMPLETED
+  completionPercent Float     @default(0.0)
+  testScore         Float?
+  unlockedAt        DateTime  @default(now())
+  completedAt       DateTime?
+  updatedAt         DateTime  @updatedAt
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session           Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sessionId])
+}
+
+model Question {
+  id             String   @id @default(cuid())
+  topicId        String?
+  sessionId      String?
+  title          String
+  type           String   @default("MCQ") // MCQ, CODING, SQL, CONCEPTUAL, SCENARIO
+  difficulty     String   @default("ADVANCED")
+  prompt         String
+  optionsJson    String   @default("[]")
+  correctAnswer  String
+  explanation    String
+  rubricJson     String   @default("{}")
+  createdAt      DateTime @default(now())
+
+  topic          Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
+}
+
+model Test {
+  id              String        @id @default(cuid())
+  type            String        @default("DAILY") // DAILY, WEEKLY, TOPIC
+  title           String
+  totalMarks      Int           @default(100)
+  durationMinutes Int           @default(30)
+  sectionsJson    String        @default("[]")
+  createdAt       DateTime      @default(now())
+
+  attempts        TestAttempt[]
+}
+
+model TestAttempt {
+  id                 String    @id @default(cuid())
+  userId             String
+  testId             String
+  score              Float
+  maxScore           Float     @default(100)
+  accuracy           Float
+  timeTakenSeconds   Int
+  answersJson        String    @default("{}")
+  weakAreasJson      String    @default("[]")
+  categoryScoresJson String    @default("{}")
+  completedAt        DateTime  @default(now())
+
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test               Test      @relation(fields: [testId], references: [id], onDelete: Cascade)
+}
+
+model CodingProblem {
+  id               String             @id @default(cuid())
+  topicId          String?
+  title            String
+  slug             String             @unique
+  difficulty       String             @default("MEDIUM")
+  description      String
+  constraints      String
+  sampleInput      String
+  sampleOutput     String
+  starterCodeJava  String
+  starterCodeTs    String
+  starterCodeSql   String
+  testCasesJson    String             @default("[]")
+  optimalSolution  String
+  timeComplexity   String
+  spaceComplexity  String
+  createdAt        DateTime           @default(now())
+
+  topic            Topic?             @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  submissions      CodingSubmission[]
+}
+
+model CodingSubmission {
+  id          String        @id @default(cuid())
+  userId      String
+  problemId   String
+  language    String        @default("java")
+  code        String
+  status      String        @default("PASSED")
+  runtimeMs   Int           @default(45)
+  passedTests Int           @default(3)
+  totalTests  Int           @default(3)
+  createdAt   DateTime      @default(now())
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem     CodingProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+}
+
+model InterviewSession {
+  id             String   @id @default(cuid())
+  userId         String
+  category       String   @default("FULL_MOCK")
+  currentRound   Int      @default(1)
+  historyJson    String   @default("[]")
+  finalScoreJson String?
+  status         String   @default("IN_PROGRESS")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ResumeProject {
+  id                     String   @id @default(cuid())
+  name                   String
+  slug                   String   @unique
+  subtitle               String
+  technologiesJson       String   @default("[]")
+  description            String
+  architectureOverview   String
+  dataFlowMermaid        String
+  keyHighlightsJson      String   @default("[]")
+  deepDiveQuestionsJson  String   @default("[]")
+  createdAt              DateTime @default(now())
+}
+
+model SmtpConfig {
+  id                String   @id @default("default")
+  host              String   @default("smtp.gmail.com")
+  port              Int      @default(587)
+  username          String   @default("")
+  passwordEncrypted String   @default("")
+  secure            Boolean  @default(false)
+  senderEmail       String   @default("coach@prepforge.dev")
+  senderName        String   @default("PrepForge Interview Coach")
+  updatedAt         DateTime @updatedAt
+}
+
+model EmailLog {
+  id             String   @id @default(cuid())
+  recipientEmail String
+  templateName   String
+  subject        String
+  status         String   @default("SENT")
+  error          String?
+  sentAt         DateTime @default(now())
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  action       String
+  entity       String
+  entityId     String?
+  metadataJson String   @default("{}")
+  ipAddress    String?
+  timestamp    DateTime @default(now())
+
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
