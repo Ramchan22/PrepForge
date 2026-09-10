@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck,
   Mail,
@@ -13,7 +13,9 @@ import {
   Server,
   Send,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader2,
+  Database
 } from 'lucide-react';
 import { ALL_SESSIONS } from '@/data/curriculum/sessionsData';
 
@@ -29,6 +31,13 @@ export function AdminConsole() {
   const [smtpSenderEmail, setSmtpSenderEmail] = useState('coach@prepforge.dev');
   const [smtpSecure, setSmtpSecure] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
+
+  // Status & loading states
+  const [isLoadingConfig, setIsLoadingConfig] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTestingConn, setIsTestingConn] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [smtpStatusMessage, setSmtpStatusMessage] = useState<{ text: string; success: boolean } | null>(null);
 
   // Lock status state for sessions
@@ -39,27 +48,153 @@ export function AdminConsole() {
   const [testScoreThreshold, setTestScoreThreshold] = useState(70);
   const [criteriaSaved, setCriteriaSaved] = useState(false);
 
-  const handleTestSmtpConnection = () => {
-    setSmtpStatusMessage({
-      text: `✓ Connection verified successfully to ${smtpHost}:${smtpPort} with TLS.`,
-      success: true,
-    });
+  // 1. Fetch persisted SMTP config from database on mount
+  useEffect(() => {
+    async function loadSmtpConfig() {
+      try {
+        setIsLoadingConfig(true);
+        const res = await fetch('/api/admin/smtp');
+        const data = await res.json();
+        if (data.success && data.config) {
+          setSmtpHost(data.config.host || 'smtp.gmail.com');
+          setSmtpPort(data.config.port || '587');
+          setSmtpUser(data.config.username || '');
+          if (data.config.password) {
+            setSmtpPassword(data.config.password);
+          }
+          setSmtpSenderName(data.config.senderName || 'PrepForge Interview Coach');
+          setSmtpSenderEmail(data.config.senderEmail || 'coach@prepforge.dev');
+          setSmtpSecure(Boolean(data.config.secure));
+          if (data.config.updatedAt) {
+            setLastSavedTime(new Date(data.config.updatedAt).toLocaleTimeString());
+          }
+        }
+      } catch (err: any) {
+        console.error('Failed to load SMTP configuration from DB:', err);
+      } finally {
+        setIsLoadingConfig(false);
+      }
+    }
+    loadSmtpConfig();
+  }, []);
+
+  // 2. Test SMTP Connection
+  const handleTestSmtpConnection = async () => {
+    try {
+      setIsTestingConn(true);
+      setSmtpStatusMessage(null);
+      const res = await fetch('/api/admin/smtp/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'test_connection',
+          host: smtpHost,
+          port: smtpPort,
+          username: smtpUser,
+          password: smtpPassword,
+          secure: smtpSecure,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSmtpStatusMessage({
+          text: `✓ ${data.message || `Connection verified to ${smtpHost}:${smtpPort} with TLS.`}`,
+          success: true,
+        });
+      } else {
+        setSmtpStatusMessage({
+          text: `✕ ${data.error || 'SMTP handshake failed. Please check host, port, and credentials.'}`,
+          success: false,
+        });
+      }
+    } catch (err: any) {
+      setSmtpStatusMessage({
+        text: `✕ Connection test error: ${err.message}`,
+        success: false,
+      });
+    } finally {
+      setIsTestingConn(false);
+    }
   };
 
-  const handleSendTestEmail = () => {
-    setSmtpStatusMessage({
-      text: `✓ Test preparation email dispatched to ram795055@gmail.com! Delivery logged.`,
-      success: true,
-    });
+  // 3. Send Test Email
+  const handleSendTestEmail = async () => {
+    try {
+      setIsSendingEmail(true);
+      setSmtpStatusMessage(null);
+      const res = await fetch('/api/admin/smtp/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send_email',
+          recipientEmail: 'ram795055@gmail.com',
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSmtpStatusMessage({
+          text: `✓ ${data.message || 'Test preparation email dispatched to ram795055@gmail.com! Delivery logged in database.'}`,
+          success: true,
+        });
+      } else {
+        setSmtpStatusMessage({
+          text: `✕ ${data.error || 'Failed to send test email.'}`,
+          success: false,
+        });
+      }
+    } catch (err: any) {
+      setSmtpStatusMessage({
+        text: `✕ Email dispatch error: ${err.message}`,
+        success: false,
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
-  const handleSaveSmtp = (e: React.FormEvent) => {
+  // 4. Save SMTP Configuration to PostgreSQL Database
+  const handleSaveSmtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSmtpPassword('••••••••••••'); // securely mask
-    setSmtpStatusMessage({
-      text: `✓ SMTP configuration encrypted and saved to database.`,
-      success: true,
-    });
+    try {
+      setIsSaving(true);
+      setSmtpStatusMessage(null);
+      const res = await fetch('/api/admin/smtp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          host: smtpHost,
+          port: smtpPort,
+          username: smtpUser,
+          password: smtpPassword,
+          senderName: smtpSenderName,
+          senderEmail: smtpSenderEmail,
+          secure: smtpSecure,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (data.config?.password) {
+          setSmtpPassword(data.config.password); // mask securely
+        }
+        setLastSavedTime(new Date().toLocaleTimeString());
+        setSmtpStatusMessage({
+          text: `✓ ${data.message || 'SMTP configuration successfully encrypted and persisted to database!'}`,
+          success: true,
+        });
+      } else {
+        setSmtpStatusMessage({
+          text: `✕ Failed to save: ${data.error || 'Unknown server error.'}`,
+          success: false,
+        });
+      }
+    } catch (err: any) {
+      setSmtpStatusMessage({
+        text: `✕ Error saving configuration: ${err.message}`,
+        success: false,
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const toggleSessionLock = (order: number) => {
@@ -81,24 +216,27 @@ export function AdminConsole() {
       <div className="flex flex-wrap gap-2 p-1.5 rounded-xl bg-slate-900 border border-slate-800">
         <button
           onClick={() => setActiveTab('SMTP')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === 'SMTP' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
-            }`}
+          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
+            activeTab === 'SMTP' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+          }`}
         >
           <Mail className="w-3.5 h-3.5" />
           <span>SMTP Gateway Configuration</span>
         </button>
         <button
           onClick={() => setActiveTab('LOCKS')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === 'LOCKS' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
-            }`}
+          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
+            activeTab === 'LOCKS' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+          }`}
         >
           <Lock className="w-3.5 h-3.5" />
           <span>Session Lock Overrides</span>
         </button>
         <button
           onClick={() => setActiveTab('CRITERIA')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === 'CRITERIA' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
-            }`}
+          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
+            activeTab === 'CRITERIA' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+          }`}
         >
           <Sliders className="w-3.5 h-3.5" />
           <span>Progression Criteria Thresholds</span>
@@ -108,24 +246,44 @@ export function AdminConsole() {
       {/* Tab 1: SMTP Config */}
       {activeTab === 'SMTP' && (
         <div className="p-6 md:p-8 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-6 shadow-2xl">
-          <div>
-            <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-              <Mail className="w-5 h-5 text-indigo-400" />
-              <span>Production SMTP Gateway Configuration</span>
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Configure outgoing credentials for daily preparation emails, weekly assessment scorecards, and session completion notifications.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+                <Mail className="w-5 h-5 text-indigo-400" />
+                <span>Production SMTP Gateway Configuration</span>
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Configure outgoing credentials for daily preparation emails, weekly assessment scorecards, and session completion notifications.
+              </p>
+            </div>
+            {lastSavedTime && (
+              <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/30 border border-emerald-500/20 text-emerald-400 text-[11px] font-mono shrink-0">
+                <Database className="w-3 h-3" />
+                <span>DB Synced: {lastSavedTime}</span>
+              </div>
+            )}
           </div>
+
+          {isLoadingConfig && (
+            <div className="flex items-center space-x-2 text-xs text-indigo-400 font-mono py-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Loading saved credentials from database...</span>
+            </div>
+          )}
 
           {smtpStatusMessage && (
             <div
-              className={`p-4 rounded-xl text-xs font-mono flex items-center space-x-2 ${smtpStatusMessage.success
-                ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30'
-                : 'bg-rose-950/40 text-rose-300 border border-rose-500/30'
-                }`}
+              className={`p-4 rounded-xl text-xs font-mono flex items-center space-x-2 ${
+                smtpStatusMessage.success
+                  ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-rose-950/40 text-rose-300 border border-rose-500/30'
+              }`}
             >
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              {smtpStatusMessage.success ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+              )}
               <span>{smtpStatusMessage.text}</span>
             </div>
           )}
@@ -137,6 +295,8 @@ export function AdminConsole() {
                 type="text"
                 value={smtpHost}
                 onChange={(e) => setSmtpHost(e.target.value)}
+                placeholder="smtp.gmail.com"
+                required
                 className="w-full p-2.5 rounded-lg bg-[#070b14] border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
               />
             </div>
@@ -147,6 +307,8 @@ export function AdminConsole() {
                 type="text"
                 value={smtpPort}
                 onChange={(e) => setSmtpPort(e.target.value)}
+                placeholder="587"
+                required
                 className="w-full p-2.5 rounded-lg bg-[#070b14] border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
               />
             </div>
@@ -157,16 +319,17 @@ export function AdminConsole() {
                 type="text"
                 value={smtpUser}
                 onChange={(e) => setSmtpUser(e.target.value)}
+                placeholder="your.email@gmail.com"
                 className="w-full p-2.5 rounded-lg bg-[#070b14] border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
               />
             </div>
 
             <div>
-              <label className="text-slate-300 font-semibold block mb-1">SMTP Password</label>
+              <label className="text-slate-300 font-semibold block mb-1">SMTP Password / App Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter SMTP password..."
+                  placeholder="Enter SMTP password or app password..."
                   value={smtpPassword}
                   onChange={(e) => setSmtpPassword(e.target.value)}
                   className="w-full p-2.5 pr-10 rounded-lg bg-[#070b14] border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
@@ -187,6 +350,7 @@ export function AdminConsole() {
                 type="text"
                 value={smtpSenderName}
                 onChange={(e) => setSmtpSenderName(e.target.value)}
+                placeholder="PrepForge Interview Coach"
                 className="w-full p-2.5 rounded-lg bg-[#070b14] border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
               />
             </div>
@@ -197,6 +361,7 @@ export function AdminConsole() {
                 type="email"
                 value={smtpSenderEmail}
                 onChange={(e) => setSmtpSenderEmail(e.target.value)}
+                placeholder="coach@prepforge.dev"
                 className="w-full p-2.5 rounded-lg bg-[#070b14] border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
               />
             </div>
@@ -204,27 +369,31 @@ export function AdminConsole() {
             <div className="md:col-span-2 pt-3 border-t border-slate-800 flex flex-wrap items-center gap-3">
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md shadow-indigo-600/30 transition-all cursor-pointer"
+                disabled={isSaving}
+                className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold shadow-md shadow-indigo-600/30 transition-all cursor-pointer flex items-center space-x-2"
               >
-                Save SMTP Configuration
+                {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Database className="w-3.5 h-3.5" />}
+                <span>{isSaving ? 'Saving to Database...' : 'Save SMTP Configuration'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleTestSmtpConnection}
-                className="px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer"
+                disabled={isTestingConn}
+                className="px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer"
               >
-                <Server className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Test SMTP Connection</span>
+                {isTestingConn ? <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" /> : <Server className="w-3.5 h-3.5 text-cyan-400" />}
+                <span>{isTestingConn ? 'Testing TLS...' : 'Test SMTP Connection'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleSendTestEmail}
-                className="px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer"
+                disabled={isSendingEmail}
+                className="px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer"
               >
-                <Send className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Send Test Email to Ramkumar</span>
+                {isSendingEmail ? <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" /> : <Send className="w-3.5 h-3.5 text-emerald-400" />}
+                <span>{isSendingEmail ? 'Dispatching...' : 'Send Test Email to Ramkumar'}</span>
               </button>
             </div>
           </form>
@@ -258,10 +427,11 @@ export function AdminConsole() {
                   </div>
                   <button
                     onClick={() => toggleSessionLock(session.order)}
-                    className={`px-3 py-1.5 rounded-lg font-mono text-xs font-bold flex items-center space-x-1.5 transition-all cursor-pointer ${isUnlocked
-                      ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
-                      : 'bg-slate-800 text-slate-400 border border-slate-700'
-                      }`}
+                    className={`px-3 py-1.5 rounded-lg font-mono text-xs font-bold flex items-center space-x-1.5 transition-all cursor-pointer ${
+                      isUnlocked
+                        ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
+                        : 'bg-slate-800 text-slate-400 border border-slate-700'
+                    }`}
                   >
                     {isUnlocked ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
                     <span>{isUnlocked ? 'Unlocked' : 'Locked'}</span>

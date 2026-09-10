@@ -25,6 +25,13 @@ export async function getTransporter() {
   const user = smtpConfig?.username || process.env.SMTP_USER || '';
   const pass = smtpConfig?.passwordEncrypted || process.env.SMTP_PASSWORD || '';
 
+  const hasRealCredentials = Boolean(
+    user &&
+    pass &&
+    !user.includes('notifications@prepforge.dev') &&
+    pass !== 'demo_password'
+  );
+
   const transporter = nodemailer.createTransport({
     host,
     port,
@@ -35,15 +42,15 @@ export async function getTransporter() {
   const senderName = smtpConfig?.senderName || process.env.SMTP_FROM_NAME || 'PrepForge Interview Coach';
   const senderEmail = smtpConfig?.senderEmail || process.env.SMTP_FROM_EMAIL || 'coach@prepforge.dev';
 
-  return { transporter, from: `"${senderName}" <${senderEmail}>` };
+  return { transporter, from: `"${senderName}" <${senderEmail}>`, hasRealCredentials };
 }
 
 export async function sendEmail({ to, subject, templateName, html }: EmailOptions) {
   try {
-    const { transporter, from } = await getTransporter();
-    
-    // In dev without active credentials, simulate email delivery
-    if (!process.env.SMTP_USER || process.env.SMTP_USER.includes('notifications@')) {
+    const { transporter, from, hasRealCredentials } = await getTransporter();
+
+    // If no real production credentials configured yet, simulate email delivery & record log
+    if (!hasRealCredentials) {
       console.log(`[PrepForge SMTP Simulation] Sent "${subject}" to ${to}`);
       try {
         await prisma.emailLog.create({
@@ -55,7 +62,7 @@ export async function sendEmail({ to, subject, templateName, html }: EmailOption
           },
         });
       } catch (e) {}
-      return { success: true, simulated: true };
+      return { success: true, simulated: true, message: `Simulated dispatch to ${to} (credentials not yet configured)` };
     }
 
     const info = await transporter.sendMail({
@@ -94,7 +101,7 @@ export async function sendEmail({ to, subject, templateName, html }: EmailOption
   }
 }
 
-// 7 Reusable HTML Email Templates
+// Reusable HTML Email Template for Daily Prep Briefing
 export function renderDailyPrepEmail(params: {
   candidateName: string;
   currentSession: string;
