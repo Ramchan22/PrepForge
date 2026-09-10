@@ -48,7 +48,7 @@ export function AdminConsole() {
 
   const handleSendTestEmail = () => {
     setSmtpStatusMessage({
-      text: `✓ Test preparation email dispatched to ramkumar@prepforge.dev! Delivery logged.`,
+      text: `✓ Test preparation email dispatched to ram795055@gmail.com! Delivery logged.`,
       success: true,
     });
   };
@@ -81,27 +81,24 @@ export function AdminConsole() {
       <div className="flex flex-wrap gap-2 p-1.5 rounded-xl bg-slate-900 border border-slate-800">
         <button
           onClick={() => setActiveTab('SMTP')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === 'SMTP' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
-          }`}
+          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === 'SMTP' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+            }`}
         >
           <Mail className="w-3.5 h-3.5" />
           <span>SMTP Gateway Configuration</span>
         </button>
         <button
           onClick={() => setActiveTab('LOCKS')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === 'LOCKS' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
-          }`}
+          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === 'LOCKS' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+            }`}
         >
           <Lock className="w-3.5 h-3.5" />
           <span>Session Lock Overrides</span>
         </button>
         <button
           onClick={() => setActiveTab('CRITERIA')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${
-            activeTab === 'CRITERIA' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
-          }`}
+          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all cursor-pointer ${activeTab === 'CRITERIA' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+            }`}
         >
           <Sliders className="w-3.5 h-3.5" />
           <span>Progression Criteria Thresholds</span>
@@ -123,11 +120,10 @@ export function AdminConsole() {
 
           {smtpStatusMessage && (
             <div
-              className={`p-4 rounded-xl text-xs font-mono flex items-center space-x-2 ${
-                smtpStatusMessage.success
-                  ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30'
-                  : 'bg-rose-950/40 text-rose-300 border border-rose-500/30'
-              }`}
+              className={`p-4 rounded-xl text-xs font-mono flex items-center space-x-2 ${smtpStatusMessage.success
+                ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30'
+                : 'bg-rose-950/40 text-rose-300 border border-rose-500/30'
+                }`}
             >
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>{smtpStatusMessage.text}</span>
@@ -262,11 +258,10 @@ export function AdminConsole() {
                   </div>
                   <button
                     onClick={() => toggleSessionLock(session.order)}
-                    className={`px-3 py-1.5 rounded-lg font-mono text-xs font-bold flex items-center space-x-1.5 transition-all cursor-pointer ${
-                      isUnlocked
-                        ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-slate-800 text-slate-400 border border-slate-700'
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg font-mono text-xs font-bold flex items-center space-x-1.5 transition-all cursor-pointer ${isUnlocked
+                      ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-slate-800 text-slate-400 border border-slate-700'
+                      }`}
                   >
                     {isUnlocked ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
                     <span>{isUnlocked ? 'Unlocked' : 'Locked'}</span>

@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       });
 
       const result = await sendEmail({
-        to: recipientEmail || 'ramkumar@prepforge.dev',
+        to: recipientEmail || 'ram795055@gmail.com',
         subject: "PrepForge Daily Briefing: Core Java & WealthServ Case Studies",
         templateName: 'DAILY_PREP',
         html: emailHtml,
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         success: true,
         result,
-        message: `Email dispatched to ${recipientEmail || 'ramkumar@prepforge.dev'}!`,
+        message: `Email dispatched to ${recipientEmail || 'ram795055@gmail.com'}!`,
       });
     }
 

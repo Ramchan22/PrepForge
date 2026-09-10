@@ -5,7 +5,7 @@ export async function GET() {
   try {
     // Fetch default candidate user
     const user = await prisma.user.findFirst({
-      where: { email: 'ramkumar@prepforge.dev' },
+      where: { email: 'ram795055@gmail.com' },
       include: {
         conceptProgress: {
           include: { concept: true },
@@ -49,7 +49,7 @@ export async function GET() {
         if (Array.isArray(parsed)) {
           parsed.forEach((w: string) => weakAreasSet.add(w));
         }
-      } catch (e) {}
+      } catch (e) { }
     });
 
     return NextResponse.json({
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     const { action, readinessScore, session1Percent, streak } = body;
 
     const user = await prisma.user.findFirst({
-      where: { email: 'ramkumar@prepforge.dev' },
+      where: { email: 'ram795055@gmail.com' },
     });
 
     if (!user) {

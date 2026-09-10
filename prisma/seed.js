@@ -13,13 +13,13 @@ async function main() {
   const adminHash = await bcrypt.hash('AdminMaster2026!', 10);
 
   const ramkumar = await prisma.user.upsert({
-    where: { email: 'ramkumar@prepforge.dev' },
+    where: { email: 'ram795055@gmail.com' },
     update: {
       streak: 0,
       interviewReadinessScore: 0.0,
     },
     create: {
-      email: 'ramkumar@prepforge.dev',
+      email: 'ram795055@gmail.com',
       name: 'Ramkumar',
       passwordHash,
       role: 'USER',
