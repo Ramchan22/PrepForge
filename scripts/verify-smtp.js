@@ -4,11 +4,10 @@ const crypto = require('crypto');
 
 const prisma = new PrismaClient();
 const ALGORITHM = 'aes-256-gcm';
-const MASTER_SECRET = 'prepforge-secure-credential-vault-2026!';
+const MASTER_SECRET = 'prepforge-production-master-key-32b!';
 
 function getEncryptionKey() {
-  const seed = process.env.ENCRYPTION_KEY || MASTER_SECRET;
-  return crypto.createHash('sha256').update(seed).digest();
+  return crypto.createHash('sha256').update(MASTER_SECRET).digest();
 }
 
 function decrypt(cipherText) {

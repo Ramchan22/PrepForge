@@ -20,9 +20,9 @@ export async function getTransporter() {
     // If DB is not yet ready, fallback to env vars
   }
 
-  const host = smtpConfig?.host || process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = smtpConfig?.port || parseInt(process.env.SMTP_PORT || '587', 10);
-  const secure = smtpConfig?.secure ?? (process.env.SMTP_SECURE === 'true');
+  const host = smtpConfig?.host || process.env.SMTP_HOST || 'smtp-relay.brevo.com';
+  let port = smtpConfig?.port || parseInt(process.env.SMTP_PORT || '587', 10);
+  let secure = port === 465 ? (smtpConfig?.secure ?? true) : false;
   const user = smtpConfig?.username || process.env.SMTP_USER || '';
   const rawPass = smtpConfig?.passwordEncrypted || process.env.SMTP_PASSWORD || '';
   const pass = decryptCredential(rawPass);
@@ -39,17 +39,18 @@ export async function getTransporter() {
     port,
     secure,
     auth: user && pass ? { user, pass } : undefined,
+    connectionTimeout: 7000,
   });
 
   const senderName = smtpConfig?.senderName || process.env.SMTP_FROM_NAME || 'PrepForge Interview Coach';
   const senderEmail = smtpConfig?.senderEmail || process.env.SMTP_FROM_EMAIL || 'coach@prepforge.dev';
 
-  return { transporter, from: `"${senderName}" <${senderEmail}>`, hasRealCredentials };
+  return { transporter, from: `"${senderName}" <${senderEmail}>`, hasRealCredentials, host, port, user, pass };
 }
 
 export async function sendEmail({ to, subject, templateName, html }: EmailOptions) {
   try {
-    const { transporter, from, hasRealCredentials } = await getTransporter();
+    const { transporter, from, hasRealCredentials, host, port, user, pass } = await getTransporter();
 
     // If no real production credentials configured yet, simulate email delivery & record log
     if (!hasRealCredentials) {
@@ -67,12 +68,30 @@ export async function sendEmail({ to, subject, templateName, html }: EmailOption
       return { success: true, simulated: true, message: `Simulated dispatch to ${to} (credentials not yet configured)` };
     }
 
-    const info = await transporter.sendMail({
-      from,
-      to,
-      subject,
-      html,
-    });
+    let info;
+    try {
+      info = await transporter.sendMail({
+        from,
+        to,
+        subject,
+        html,
+      });
+    } catch (mailErr: any) {
+      // If port 465 timed out on cloud host, auto-retry on 587
+      if ((port === 465 || mailErr.message.includes('timeout')) && host.includes('brevo')) {
+        console.log('[PrepForge SMTP] Retrying email dispatch on Port 587 (STARTTLS)...');
+        const fallbackTransporter = nodemailer.createTransport({
+          host,
+          port: 587,
+          secure: false,
+          auth: { user, pass },
+          connectionTimeout: 7000,
+        });
+        info = await fallbackTransporter.sendMail({ from, to, subject, html });
+      } else {
+        throw mailErr;
+      }
+    }
 
     try {
       await prisma.emailLog.create({

@@ -24,14 +24,23 @@ export function AdminConsole() {
 
   // SMTP form state (Brevo Production Relay defaults)
   const [smtpHost, setSmtpHost] = useState('smtp-relay.brevo.com');
-  const [smtpPort, setSmtpPort] = useState('465');
+  const [smtpPort, setSmtpPort] = useState('587');
   const [smtpUser, setSmtpUser] = useState('hari@fintuple.com');
   const [smtpPassword, setSmtpPassword] = useState('••••••••••••');
   const [smtpSenderName, setSmtpSenderName] = useState('PrepForge Interview Coach');
   const [smtpSenderEmail, setSmtpSenderEmail] = useState('hari@fintuple.com');
-  const [smtpSecure, setSmtpSecure] = useState(true);
+  const [smtpSecure, setSmtpSecure] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
+
+  const handlePortChange = (newPort: string) => {
+    setSmtpPort(newPort);
+    if (newPort === '465') {
+      setSmtpSecure(true);
+    } else {
+      setSmtpSecure(false);
+    }
+  };
 
   // Status & loading states
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
@@ -302,15 +311,52 @@ export function AdminConsole() {
             </div>
 
             <div>
-              <label className="text-slate-300 font-semibold block mb-1">SMTP Port</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-slate-300 font-semibold">SMTP Port</label>
+                <div className="flex items-center space-x-1">
+                  <button
+                    type="button"
+                    onClick={() => handlePortChange('587')}
+                    className={`px-1.5 py-0.5 text-[10px] font-mono rounded ${smtpPort === '587' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+                  >
+                    587 (TLS)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handlePortChange('2525')}
+                    className={`px-1.5 py-0.5 text-[10px] font-mono rounded ${smtpPort === '2525' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+                  >
+                    2525 (Alt)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handlePortChange('465')}
+                    className={`px-1.5 py-0.5 text-[10px] font-mono rounded ${smtpPort === '465' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}`}
+                  >
+                    465 (SSL)
+                  </button>
+                </div>
+              </div>
               <input
                 type="text"
                 value={smtpPort}
-                onChange={(e) => setSmtpPort(e.target.value)}
+                onChange={(e) => handlePortChange(e.target.value)}
                 placeholder="587"
                 required
                 className="w-full p-2.5 rounded-lg bg-[#070b14] border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
               />
+              <div className="flex items-center space-x-2 mt-2">
+                <input
+                  type="checkbox"
+                  id="smtpSecure"
+                  checked={smtpSecure}
+                  onChange={(e) => setSmtpSecure(e.target.checked)}
+                  className="rounded bg-[#070b14] border-slate-800 text-indigo-600 focus:ring-0 cursor-pointer"
+                />
+                <label htmlFor="smtpSecure" className="text-[11px] text-slate-400 cursor-pointer">
+                  Direct SSL/TLS (Required for Port 465; keep unchecked for 587/2525)
+                </label>
+              </div>
             </div>
 
             <div>

@@ -74,7 +74,8 @@ export async function POST(req: Request) {
     });
 
     let finalPassword = existing?.passwordEncrypted || '';
-    if (password && password !== '••••••••••••') {
+    const isMasked = !password || password.includes('•') || password.includes('*') || password.includes('?') || password.includes('');
+    if (!isMasked) {
       finalPassword = encryptCredential(password);
     }
 

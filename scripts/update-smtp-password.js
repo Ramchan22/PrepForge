@@ -5,11 +5,10 @@ const prisma = new PrismaClient();
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
-const MASTER_SECRET = 'prepforge-secure-credential-vault-2026!';
+const MASTER_SECRET = 'prepforge-production-master-key-32b!';
 
 function getEncryptionKey() {
-  const seed = process.env.ENCRYPTION_KEY || MASTER_SECRET;
-  return crypto.createHash('sha256').update(seed).digest();
+  return crypto.createHash('sha256').update(MASTER_SECRET).digest();
 }
 
 function encrypt(plainText) {
@@ -45,19 +44,19 @@ async function main() {
     create: {
       id: 'default',
       host: 'smtp-relay.brevo.com',
-      port: 465,
+      port: 587,
       username: 'hari@fintuple.com',
       passwordEncrypted: encryptedPassword,
-      secure: true,
+      secure: false,
       senderEmail: 'hari@fintuple.com',
       senderName: 'PrepForge Interview Coach',
     },
     update: {
       host: 'smtp-relay.brevo.com',
-      port: 465,
+      port: 587,
       username: 'hari@fintuple.com',
       passwordEncrypted: encryptedPassword,
-      secure: true,
+      secure: false,
       senderEmail: 'hari@fintuple.com',
       senderName: 'PrepForge Interview Coach',
     },
